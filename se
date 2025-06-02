@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tax Calculator</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 30px 40px;
+      width: 350px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(8.5px);
+      -webkit-backdrop-filter: blur(8.5px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    h2 {
+      color: #e3e3e3;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+    }
+    label, input, select {
+      display: block;
+      margin: 10px 0 5px;
+      color: #f0f0f0;
+      font-weight: 600;
+    }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: #333;
+      font-weight: 600;
+    }
+    select {
+      cursor: pointer;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #ffb347;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #3a1c71;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 15px 0 rgba(255,179,71,0.6);
+    }
+    button:hover {
+      background-color: #ff9f00;
+      box-shadow: 0 6px 20px 0 rgba(255,159,0,0.8);
+    }
+
+    .hidden { display: none; margin-top: 10px; }
+    #businessMsg, #govMsg {
+      color: #ff6e6e;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    #disabilityCountSection label {
+      margin-top: 15px;
+    }
+
+    #result {
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.25);
+      color: #222;
+      border-radius: 10px;
+      padding: 20px;
+      font-weight: 700;
+      text-align: left;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      color: #3a1c71;
+    }
+    #result h3 {
+      color: #ffb347;
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+    #result p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Income Tax Calculator</h2>
+
+  <!-- Step 1: Profession -->
+  <label for="profession">Select Profession:</label>
+  <select id="profession" onchange="handleProfession()">
+    <option value="">--Select--</option>
+    <option value="salaried">Salaried</option>
+    <option value="business">Business</option>
+  </select>
+
+  <div id="businessMsg" class="hidden">Site is under maintenance. Try later.</div>
+
+  <!-- Step 2: Salaried Type -->
+  <div id="salariedSection" class="hidden">
+    <label for="salariedType">Select Salaried Type:</label>
+    <select id="salariedType" onchange="handleSalariedType()">
+      <option value="">--Select--</option>
+      <option value="government">Government</option>
+      <option value="corporate">Corporate</option>
+    </select>
+  </div>
+
+  <div id="govMsg" class="hidden">Site is under maintenance. Try later.</div>
+
+  <!-- Step 3: Corporate Inputs -->
+  <div id="corporateSection" class="hidden">
+    <label>Name: <input type="text" id="name" placeholder="Enter your name"></label>
+    <label>Basic Salary: <input type="number" id="basic" placeholder="Enter basic salary" min="0"></label>
+    <label>DA: <input type="number" id="da" placeholder="Enter DA" min="0"></label>
+    <label>HRA (monthly): <input type="number" id="hra" placeholder="Enter monthly HRA" min="0"></label>
+    <label>PF: <input type="number" id="pf" placeholder="Enter PF contribution" min="0"></label>
+    <label>Age: <input type="number" id="age" placeholder="Enter your age" min="0"></label>
+
+    <!-- Step 4: Disability -->
+    <label>Are you physically disabled?</label>
+    <select id="disability" onchange="handleDisability()">
+      <option value="">--Select--</option>
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+
+    <div id="disabilityCountSection" class="hidden">
+      <label>Number of Disabilities:</label>
+      <select id="disabilityCount">
+        <option value="1">One</option>
+        <option value="2">More than one</option>
+      </select>
+    </div>
+
+    <button onclick="calculateTax()">Calculate Tax</button>
+  </div>
+
+  <!-- Step 7: Result -->
+  <div id="result" class="hidden">
+    <h3>Tax Details</h3>
+    <p><strong>Name:</strong> <span id="outName"></span></p>
+    <p><strong>Basic Salary:</strong> ₹<span id="outBasic"></span></p>
+    <p><strong>Total Tax:</strong> ₹<span id="outTax"></span></p>
+    <p><strong>Disability Deduction:</strong> ₹<span id="outDisabilityDeduction"></span></p>
+  </div>
+</div>
+
+<script>
+  function handleProfession() {
+    const profession = document.getElementById('profession').value;
+    document.getElementById('businessMsg').style.display = (profession === 'business') ? 'block' : 'none';
+    document.getElementById('salariedSection').style.display = (profession === 'salaried') ? 'block' : 'none';
+    document.getElementById('govMsg').style.display = 'none';
+    document.getElementById('corporateSection').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+  }
+
+  function handleSalariedType() {
+    const type = document.getElementById('salariedType').value;
+    document.getElementById('govMsg').style.display = (type === 'government') ? 'block' : 'none';
+    document.getElementById('corporateSection').style.display = (type === 'corporate') ? 'block' : 'none';
+    document.getElementById('result').style.display = 'none';
+  }
+
+  function handleDisability() {
+    const disability = document.getElementById('disability').value;
+    document.getElementById('disabilityCountSection').style.display = (disability === 'yes') ? 'block' : 'none';
+  }
+
+  function calculateTax() {
+    const name = document.getElementById('name').value.trim();
+    if (!name) {
+      alert("Please enter your name.");
+      return;
+    }
+    
+    const basic = parseFloat(document.getElementById('basic').value) || 0;
+    const da = parseFloat(document.getElementById('da').value) || 0;
+    const hra = parseFloat(document.getElementById('hra').value) || 0;
+    const pf = parseFloat(document.getElementById('pf').value) || 0;
+    const disability = document.getElementById('disability').value;
+    const disabilityCount = document.getElementById('disabilityCount').value;
+
+    const totalSalary = basic + da + (12 * hra) - pf;
+
+    let tax = 0;
+    if (totalSalary > 2400000) tax = (totalSalary - 2400000) * 0.30 + 1000000 * 0.25 + 1000000 * 0.20 + 1000000 * 0.15 + 1000000 * 0.10 + 400000 * 0.05;
+    else if (totalSalary > 2000000) tax = (totalSalary - 2000000) * 0.25 + 1000000 * 0.20 + 1000000 * 0.15 + 1000000 * 0.10 + 400000 * 0.05;
+    else if (totalSalary > 1600000) tax = (totalSalary - 1600000) * 0.20 + 1000000 * 0.15 + 1000000 * 0.10 + 400000 * 0.05;
+    else if (totalSalary > 1200000) tax = (totalSalary - 1200000) * 0.15 + 1000000 * 0.10 + 400000 * 0.05;
+    else if (totalSalary > 800000) tax = (totalSalary - 800000) * 0.10 + 400000 * 0.05;
+    else if (totalSalary > 400000) tax = (totalSalary - 400000) * 0.05;
+
+    let disabilityDeduction = 0;
+    if (disability === 'yes') {
+      disabilityDeduction = (disabilityCount === '1') ? 75000 : 125000;
+    }
+
+    const finalTax = Math.max(0, tax - disabilityDeduction);
+
+    // Show result
+    document.getElementById('outName').innerText = name;
+    document.getElementById('outBasic').innerText = basic.toFixed(2);
+    document.getElementById('outTax').innerText = finalTax.toFixed(2);
+    document.getElementById('outDisabilityDeduction').innerText = disabilityDeduction.toFixed(2);
+    document.getElementById('result').style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
+
